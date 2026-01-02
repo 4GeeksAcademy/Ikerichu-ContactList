@@ -34,19 +34,26 @@ export const Home = () => {
 	}, [])
 
 	const borrarContacto = async (id) => {
+		if (!confirm('¿Estás seguro que quieres eliminar este contacto?')) return;
 		await fetch(`https://playground.4geeks.com/contact/agendas/ikerichu/contacts/${id}`, {
 			method: 'DELETE',
 			headers: { "Content-Type": "application/json" }
 		})
 		await fetch('https://playground.4geeks.com/contact/agendas/ikerichu').then(response => response.json())
 			.then(data => {
-				dispatch({ type: 'SET_CONTACTS', payload: data.contacts.reverse()})
+				dispatch({ type: 'SET_CONTACTS', payload: data.contacts.reverse() })
 			})
 	};
 
 	return (
 		<div className="text-center mt-5">
 			<h1>Tus Contactos!!</h1>
+			<br />
+			<Link to="/demo">
+				<button className="btn btn-primary">Add Contact</button>
+			</Link>
+			<br />
+			<br />
 			{store.contactos.map(contact => (
 				<div key={contact.id} className="card mb-3">
 					<div className="d-flex justify-content-center flex-row">
@@ -67,21 +74,18 @@ export const Home = () => {
 								<button className="btn btn-primary">View Details</button>
 							</Link>
 							<br />
-							<Link to={`/contact/${contact.id}`}>
+							<Link to={`/demo/${contact.id}`}>
 								<button className="btn btn-secondary ">Edit</button>
 							</Link>
 							<br />
-							<button className="btn btn-danger" onClick={()=>borrarContacto(contact.id)}>Delete</button>
+							<button className="btn btn-danger" onClick={() => borrarContacto(contact.id)}>Delete</button>
 						</div>
 					</div>
 				</div>
 
 			))
 			}
-			<br />
-			<Link to="/demo">
-				<button className="btn btn-primary">Add Contact</button>
-			</Link>
+
 		</div>
 	);
 }; 

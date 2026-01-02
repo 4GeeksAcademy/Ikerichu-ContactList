@@ -1,8 +1,7 @@
 // Import necessary components from react-router-dom and other parts of the application.
-import { Link } from "react-router-dom";
-import useGlobalReducer from "../hooks/useGlobalReducer";  // Custom hook htmlFor accessing the global state.
-import { useEffect } from "react";
-import { useNavigate } from "module";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";  // Custom hook for accessing the global state.
+import { useEffect, useState } from "react";
 
 export const Demo = () => {
   // Access the global state and dispatch function using the useGlobalReducer hook.
@@ -16,40 +15,61 @@ export const Demo = () => {
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
 
-  function guardarContacto(e) {
+  async function guardarContacto(e) {
     e.preventDefault()
-    if (name.trim() == "" || phone.trim() == "" || email.trim() == "" || address.trim() == "") {
+    if (name.trim() === "" || phone.trim() === "" || email.trim() === "" || address.trim() === "") {
       alert("Empty fields")
       return null
     }
-    const payload = {
-      name: name,
-      phone: phone,
-      email: email,
-      address: address
-    };
-    if (!id) {
-      dispatch({ type: 'CREATE_CONTACT', payload: payload })
-    } else {
-      dispatch({ type: 'EDIT_CONTACT', payload: { id, ...payload } })
-    }
-    alert("Se añadio el contacto");
+
+    const payload = { name, phone, email, address };
+
+    try {
+      if (!id) {
+        const res = await fetch('https://playground.4geeks.com/contact/agendas/ikerichu/contacts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        if (!res.ok) throw new Error('Error creating contact')
+      } else {
+        const res = await fetch(`https://playground.4geeks.com/contact/agendas/ikerichu/contacts/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        if (!res.ok) throw new Error('Error updating contact')
+      }
     
-    setName("");
-    setPhone("");
-    setEmail("");
-    setAddress("");
-    navigate("/");
+      const listRes = await fetch('https://playground.4geeks.com/contact/agendas/ikerichu')
+      if (!listRes.ok) throw new Error('Error fetching contacts')
+      const data = await listRes.json()
+      dispatch({ type: 'SET_CONTACTS', payload: data.contacts.reverse() })
+
+      alert(!id ? "Se añadió el contacto" : "Contacto actualizado")
+
+      setName("")
+      setPhone("")
+      setEmail("")
+      setAddress("")
+      navigate("/")
+
+    } catch (err) {
+      console.error(err)
+      alert('Error')
+    }
 
   }
 
     useEffect(() => {
       if (id && store.contactos.length > 0) {
         const currentContact = store.contactos.find(contact => contact.id == id)
-        setName(currentContact.name)
-        setPhone(currentContact.phone)
-        setEmail(currentContact.email)
-        setAddress(currentContact.address)
+        if (currentContact) {
+          setName(currentContact.name)
+          setPhone(currentContact.phone)
+          setEmail(currentContact.email)
+          setAddress(currentContact.address)
+        }
       }
     }, [id, store.contactos])
 
@@ -80,7 +100,7 @@ export const Demo = () => {
               <input type="text" className="form-control" id="address" placeholder="Address" onChange={(e) => setAddress(e.target.value)} value={address} required />
             </div>
           </div>
-          <button type="submit" className="btn btn-primary">{!id ? "Add a New Contact" : `Edit Contact: ${name}`}</button>
+          <button type="submit" className="btn btn-primary">{!id ? "Add a New Contact" : `Edit Contact`}</button>
         </form>
         <br />
 

@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import { Home } from "./pages/Home";
 import { Demo } from "./pages/Demo";
-import { Contact } from "./components/Contact";
+import { Contact } from "./components/ContactView";
 
 export const router = createBrowserRouter(
     createRoutesFromElements(
@@ -21,7 +21,7 @@ export const router = createBrowserRouter(
       <>
         <Route path="/" element={<Home />} errorElement={<h1>Not found!</h1>} />
 
-        {/* Top-level Routes */}
+        <Route path="/demo/:id" element={<Demo />} />
         <Route path="/contact/:theId" element={ <Contact />} />  {/* Dynamic route for single items */}
         <Route path="/demo" element={<Demo />} />
       </>
